@@ -88,7 +88,8 @@
                     duration-150
                   "
                   type="submit"
-                 :disabled="v$.form.$invalid" 
+                 :disabled="v$.form.$invalid"
+                 @click.prevent="lookUpContact"
                 >
                   Lookup
                 </button>
@@ -101,10 +102,10 @@
   </div>
 </template>
 <script>
-// import contacts from '~/data/contacts.json';
-
+import axios from '@nuxtjs/axios'
 import useVuelidate from '@vuelidate/core'
 import { required, email, helpers } from '@vuelidate/validators'
+import contacts from '~/data/contacts.json';
 
 export default {
     props: {
@@ -114,15 +115,37 @@ export default {
     },
   },
   setup: () => ({ v$: useVuelidate() }),
-  validationConfig: {
-    $lazy: true,
-  },
+    validationConfig: {
+        $lazy: true,
+    },
   data() {
     return {
       form: {
           email: '',
       }
     }
+  },
+  methods: {
+      lookUpContact(){
+          // eslint-disable-next-line no-console
+          console.log(`checking email: ${this.form.email}`)
+          // eslint-disable-next-line no-console
+          console.log(contacts)
+        axios 
+            .get(contacts, {
+                params: {
+                    search: this.form.email
+                }
+            })
+            .then(res => {
+                // eslint-disable-next-line no-console
+                console.log(res.data.results);
+            })
+            .catch(err => {
+                // eslint-disable-next-line no-console
+                console.log(err)
+            });
+      }
   },
 validations() {
     return {
