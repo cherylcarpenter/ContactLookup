@@ -56,18 +56,19 @@
                     duration-150
                     mb-2
                   "
-                  :class="{ 'error-border': v$.form.email.$errors.length || noneFound }"
+                  :class="{
+                    'error-border': v$.form.email.$errors.length || noneFound,
+                  }"
                   placeholder="Email"
                   required
+                  @input="clearForm"
                 />
                 <div
-                
                   v-for="(error, index) of v$.form.email.$errors"
                   :key="index"
                   class="input-errors"
-                  
                 >
-                  <p v-if="form.email" class="text-red-500 text-xs italic" >
+                  <p v-if="form.email" class="text-red-500 text-xs italic">
                     {{ error.$message }}
                   </p>
                 </div>
@@ -102,11 +103,15 @@
                   Lookup
                 </button>
               </div>
-                <div v-if="statusMsg && !form.email.$pending"><p class="text-red-500 italic">
-                    {{ statusMsg }}
-                  </p></div>
+              <div v-if="statusMsg && !form.email.$pending">
+                <p class="text-red-500 italic">
+                  {{ statusMsg }}
+                </p>
+              </div>
               <div v-if="selectedContact.length !== 0" class="bg-white p-4">
-                <h3 class="text-center text-2xl mb-2 font-bold">{{ selectedContact[0].name }}</h3>
+                <h3 class="text-center text-2xl mb-2 font-bold">
+                  {{ selectedContact[0].name }}
+                </h3>
                 <div class="wrapper grid grid-cols-2 gap-2">
                   <div>
                     <p>{{ selectedContact[0].email }}</p>
@@ -150,11 +155,8 @@
   </div>
 </template>
 <script>
-// import axios from '@nuxtjs/axios'
 import useVuelidate from '@vuelidate/core'
 import { required, email, helpers } from '@vuelidate/validators'
-// import contacts from '~/static/data/contacts.json';
-// import { mapMutations } from 'vuex'
 
 export default {
   props: {
@@ -175,21 +177,27 @@ export default {
       contacts: [],
       selectedContact: [],
       statusMsg: '',
-      noneFound: false
+      noneFound: false,
     }
   },
   async fetch() {
     this.contacts = await fetch('/data/contacts.json').then((res) => res.json())
   },
   methods: {
+    clearForm() {
+      this.statusMsg= ''
+      this.noneFound=false
+      this.selectedContact= []
+
+    },
     lookUpContact() {
       this.selectedContact = this.contacts.filter(
         (contact) => contact.email === this.form.email
       )
-      if(this.selectedContact.length ===0){
-                this.statusMsg = `No contacts with email ${this.form.email}`
-                this.noneFound=true
-          }
+      if (this.selectedContact.length === 0) {
+        this.statusMsg = `No contacts with email ${this.form.email}`
+        this.noneFound = true
+      }
     },
   },
 
