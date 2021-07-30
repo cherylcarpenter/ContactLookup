@@ -49,6 +49,12 @@ export default {
   modules: [
     '@nuxtjs/axios',
   ],
+  // Axios module configuration: https://go.nuxtjs.dev/config-axios
+  axios: {
+  },
+  // env variables, work a special nuxt way see: https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-env/
+  env: {
+  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {

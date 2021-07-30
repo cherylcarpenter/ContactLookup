@@ -1,4 +1,3 @@
-
 <template>
   <div class="container mx-auto px-4 h-full">
     <div class="flex content-center items-center justify-center h-full">
@@ -19,7 +18,7 @@
         >
           <div class="rounded-t mb-0 px-6 py-6">
             <div class="text-center mb-3">
-              <h1 class="text-blueGray-500">Contact Lookup</h1>
+              <h1 class="text-3xl">Contact Lookup</h1>
             </div>
             <hr class="mt-6 border-b-1 border-blueGray-300" />
           </div>
@@ -57,12 +56,21 @@
                     duration-150
                     mb-2
                   "
+                  :class="{ 'error-border': v$.form.email.$errors.length || noneFound }"
                   placeholder="Email"
                   required
                 />
-     <div v-for="(error, index) of v$.form.email.$errors" :key="index" class="input-errors">
-        <p class="text-red-500 text-xs italic">{{ error.$message }}</p>
-      </div>
+                <div
+                
+                  v-for="(error, index) of v$.form.email.$errors"
+                  :key="index"
+                  class="input-errors"
+                  
+                >
+                  <p v-if="form.email" class="text-red-500 text-xs italic" >
+                    {{ error.$message }}
+                  </p>
+                </div>
               </div>
               <div class="text-center mt-6">
                 <button
@@ -88,11 +96,51 @@
                     duration-150
                   "
                   type="submit"
-                 :disabled="v$.form.$invalid"
-                 @click.prevent="lookUpContact"
+                  :disabled="v$.form.$invalid"
+                  @click.prevent="lookUpContact"
                 >
                   Lookup
                 </button>
+              </div>
+                <div v-if="statusMsg && !form.email.$pending"><p class="text-red-500 italic">
+                    {{ statusMsg }}
+                  </p></div>
+              <div v-if="selectedContact.length !== 0" class="bg-white p-4">
+                <h3 class="text-center text-2xl mb-2 font-bold">{{ selectedContact[0].name }}</h3>
+                <div class="wrapper grid grid-cols-2 gap-2">
+                  <div>
+                    <p>{{ selectedContact[0].email }}</p>
+                    <p>
+                      {{ selectedContact[0].city }},
+                      {{ selectedContact[0].city }}
+                      {{ selectedContact[0].postal_code }}
+                    </p>
+                    <p>{{ selectedContact[0].country }}</p>
+
+                    <p>
+                      +{{ selectedContact[0].phone[0].country_code }} ({{
+                        selectedContact[0].phone[0].area_code
+                      }})-{{
+                        selectedContact[0].phone[0].number.slice(0, 3)
+                      }}-{{ selectedContact[0].phone[0].number.slice(3) }}
+                    </p>
+                  </div>
+                  <div>
+                    <div v-if="selectedContact[0].employments.length">
+                      <h4 class="font-bold">Work History</h4>
+                      <ul class="divide-y-2">
+                        <li
+                          v-for="(jobs, j) in selectedContact[0].employments"
+                          :key="j"
+                        >
+                          <h5>{{ jobs.company }}</h5>
+                          <p>{{ jobs.title }}</p>
+                          <p>Currently employed here? {{ jobs.primary }}</p>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </form>
           </div>
@@ -102,61 +150,71 @@
   </div>
 </template>
 <script>
-import axios from '@nuxtjs/axios'
+// import axios from '@nuxtjs/axios'
 import useVuelidate from '@vuelidate/core'
 import { required, email, helpers } from '@vuelidate/validators'
-import contacts from '~/data/contacts.json';
+// import contacts from '~/static/data/contacts.json';
+// import { mapMutations } from 'vuex'
 
 export default {
-    props: {
+  props: {
     msg: {
       type: String,
       default: '',
     },
   },
   setup: () => ({ v$: useVuelidate() }),
-    validationConfig: {
-        $lazy: true,
-    },
+  validationConfig: {
+    $lazy: true,
+  },
   data() {
     return {
       form: {
-          email: '',
-      }
+        email: '',
+      },
+      contacts: [],
+      selectedContact: [],
+      statusMsg: '',
+      noneFound: false
     }
   },
-  methods: {
-      lookUpContact(){
-          // eslint-disable-next-line no-console
-          console.log(`checking email: ${this.form.email}`)
-          // eslint-disable-next-line no-console
-          console.log(contacts)
-        axios 
-            .get(contacts, {
-                params: {
-                    search: this.form.email
-                }
-            })
-            .then(res => {
-                // eslint-disable-next-line no-console
-                console.log(res.data.results);
-            })
-            .catch(err => {
-                // eslint-disable-next-line no-console
-                console.log(err)
-            });
-      }
+  async fetch() {
+    this.contacts = await fetch('/data/contacts.json').then((res) => res.json())
   },
-validations() {
+  methods: {
+    lookUpContact() {
+      this.selectedContact = this.contacts.filter(
+        (contact) => contact.email === this.form.email
+      )
+      if(this.selectedContact.length ===0){
+                this.statusMsg = `No contacts with email ${this.form.email}`
+                this.noneFound=true
+          }
+    },
+  },
+
+  validations() {
     return {
       form: {
         email: {
-           required, 
-           email: helpers.withMessage('This must be a valid email address.', email)
-        }
+          required,
+          email: helpers.withMessage(
+            'This must be a valid email address.',
+            email
+          ),
+        },
       },
     }
   },
 }
-
 </script>
+<style scoped>
+.error-border {
+  border: 1px solid red;
+
+  &:focus {
+    box-shadow: 0 0 0 0 white, 0 0 0 3px rgba(255, 0, 0, 0.27),
+      0 1px 3px 0px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+}
+</style>
