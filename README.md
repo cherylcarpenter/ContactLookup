@@ -19,4 +19,6 @@ $ yarn generate
 
 
 
-I used vuelidate plugin for the validation and having regrets. I am working on the error messaging still. I need to hide the not found if the email field is cleared.
+Contact Lookup is a Vue 3 application built on the [Nuxt.js](https://nuxtjs.org/) framework.
+
+I used [Vuelidate](https://vuelidate-next.netlify.app/) for validation which I regreted as it has some odd behaviors which I coded around.
